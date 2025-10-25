@@ -1,34 +1,57 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { useState, useEffect } from 'react'
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch("/api/products");
+      if (!res.ok){
+        setError("Failed to fetch products");
+      }
+      const data = await res.json();
+      setProducts(data);
+      console.log('Products: ', data);
+    
+      }
+    catch (error){
+      setError("Failed to fetch products");
+      console.error('Error fetching products: ', error);
+    }
+    finally{
+      setLoading(false);
+    }
+}
+  useEffect(() => {
+    fetchProducts()
+    },[])
+
+  
+ 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <div className="container">
+      <header>
+        <h1>Shopping Cart</h1>
+      </header>
+      <main>
+        {loading && <div className="loading">Loading...</div>}
+        {error && <div className="error">{error}</div>}
+        <div className="product-grid">
+          {products.map((product) => (
+            <div key={product.id} className="product-card">
+              <img src={product.image} alt={product.name} />
+              <h3>{product.name}</h3>
+              <p>${product.price}</p>
+              <button>Add to Cart</button>
+            </div>
+          ))}
+        </div>
+      </main>
+    </div>
   )
 }
 
