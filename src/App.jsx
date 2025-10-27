@@ -1,55 +1,44 @@
-import { useState, useEffect } from 'react'
+import { useContext } from 'react'
 import './App.css'
+import ProductList from './components/ProductList';
+import { ProductContext } from './context/context';
+import Header from './components/Header';
+const productImages = import.meta.glob('./assets/images/*', {
+  eager: true,
+  import: 'default'
+});
+
+const resolveProductImage = (relativePath) => {
+  if (typeof relativePath !== 'string' || !relativePath.length) {
+    return relativePath;
+  }
+
+  const normalizedPath = relativePath.replace(/^\.?\/*/, '');
+  const assetKey = `./assets/${normalizedPath}`;
+
+  if (productImages[assetKey]) {
+    return productImages[assetKey];
+  }
+
+  if (/^https?:\/\//i.test(relativePath)) {
+    return relativePath;
+  }
+
+  return `/${normalizedPath}`;
+};
 
 function App() {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-  const fetchProducts = async () => {
-    try {
-      setLoading(true);
-      const res = await fetch("/api/products");
-      if (!res.ok){
-        setError("Failed to fetch products");
-      }
-      const data = await res.json();
-      setProducts(data);
-      console.log('Products: ', data);
-    
-      }
-    catch (error){
-      setError("Failed to fetch products");
-      console.error('Error fetching products: ', error);
-    }
-    finally{
-      setLoading(false);
-    }
-}
-  useEffect(() => {
-    fetchProducts()
-    },[])
-
   
+
+  const {products,loading,error} = useContext(ProductContext);
  
   return (
     <div className="container">
-      <header>
-        <h1>Shopping Cart</h1>
-      </header>
+      <Header resolveProductImage={resolveProductImage}/>
       <main>
         {loading && <div className="loading">Loading...</div>}
         {error && <div className="error">{error}</div>}
-        <div className="product-grid">
-          {products.map((product) => (
-            <div key={product.id} className="product-card">
-              <img src={product.image} alt={product.name} />
-              <h3>{product.name}</h3>
-              <p>${product.price}</p>
-              <button>Add to Cart</button>
-            </div>
-          ))}
-        </div>
+        <ProductList products={products} resolveProductImage={resolveProductImage} />
       </main>
     </div>
   )
