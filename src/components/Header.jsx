@@ -12,7 +12,7 @@ const Header = ({ resolveProductImage }) => {
     removeFromCart = noop,
   } = contextValue;
 
-  const { itemCount, uniqueCount, formattedTotal } = useMemo(() => {
+  const { itemCount,  formattedTotal } = useMemo(() => {
     const count = cartItems.reduce(
       (acc, item) => acc + (item.qty ?? item.quantity ?? 0),
       0
